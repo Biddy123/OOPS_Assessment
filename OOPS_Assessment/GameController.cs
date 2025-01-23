@@ -12,12 +12,15 @@ namespace OOPS_Assessment
     internal class GameController
     {
         private RenderWindow gameWindow;
+        private GameMap gameMap;
         
         public GameController() 
         {
             gameWindow = new RenderWindow(new VideoMode(800, 600), "Assessment Project", Styles.Close);
             gameWindow.Closed += OnClosed;
             gameWindow.KeyReleased += OnKeyReleased;
+
+            gameMap = new GameMap();
         }
 
         private void OnClosed(object? sender, EventArgs e)
@@ -31,14 +34,18 @@ namespace OOPS_Assessment
             {
                 case Keyboard.Key.Up or Keyboard.Key.W:
                     Console.WriteLine("Up was pressed");
+                    gameMap.MovePlayer(GameMap.MovieDirections.Up);
                     break;
                 case Keyboard.Key.Down or Keyboard.Key.S:
                     Console.WriteLine("Down was pressed");
+                    gameMap.MovePlayer(GameMap.MovieDirections.Down);
                     break;
                 case Keyboard.Key.Left or Keyboard.Key.A:
                     Console.WriteLine("Left was pressed");
+                    gameMap.MovePlayer(GameMap.MovieDirections.Left);
                     break;
                 case Keyboard.Key.Right or Keyboard.Key.D:
+                    gameMap.MovePlayer(GameMap.MovieDirections.Right);
                     Console.WriteLine("Right was pressed");
                     break;
             }
@@ -72,7 +79,7 @@ namespace OOPS_Assessment
             // Clear
             gameWindow.Clear(new Color(255,0,255));
 
-            // Draw all game elements
+            gameMap.DrawMap(gameWindow);
 
 
             // Display
