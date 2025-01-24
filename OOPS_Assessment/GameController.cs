@@ -13,6 +13,7 @@ namespace OOPS_Assessment
     {
         private RenderWindow gameWindow;
         private GameMap gameMap;
+        private SideView sideView;
         
         public GameController() 
         {
@@ -21,6 +22,8 @@ namespace OOPS_Assessment
             gameWindow.KeyReleased += OnKeyReleased;
 
             gameMap = new GameMap();
+
+            sideView = new SideView();
         }
 
         private void OnClosed(object? sender, EventArgs e)
@@ -80,7 +83,7 @@ namespace OOPS_Assessment
             gameWindow.Clear(new Color(255,0,255));
 
             gameMap.DrawMap(gameWindow);
-
+            sideView.DrawSideView(gameWindow);
 
             // Display
             gameWindow.Display();
