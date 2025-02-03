@@ -1,11 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using SFML.Graphics;
+﻿using SFML.Graphics;
 using SFML.Window;
-using static SFML.Window.Keyboard;
 
 namespace OOPS_Assessment
 {
@@ -14,15 +8,15 @@ namespace OOPS_Assessment
         private RenderWindow gameWindow;
         private GameMap gameMap;
         private SideView sideView;
-        
-        public GameController() 
+        private int i = 0;
+
+        public GameController()
         {
             gameWindow = new RenderWindow(new VideoMode(800, 600), "Assessment Project", Styles.Close);
             gameWindow.Closed += OnClosed;
             gameWindow.KeyReleased += OnKeyReleased;
 
             gameMap = new GameMap();
-
             sideView = new SideView();
         }
 
@@ -33,25 +27,36 @@ namespace OOPS_Assessment
 
         private void OnKeyReleased(object? sender, KeyEventArgs e)
         {
-            switch(e.Code)
+            switch (e.Code)
             {
                 case Keyboard.Key.Up or Keyboard.Key.W:
                     Console.WriteLine("Up was pressed");
                     gameMap.MovePlayer(GameMap.MovieDirections.Up);
+                    i++;
+                    Console.WriteLine(i);
                     break;
                 case Keyboard.Key.Down or Keyboard.Key.S:
                     Console.WriteLine("Down was pressed");
                     gameMap.MovePlayer(GameMap.MovieDirections.Down);
+                    i++;
+                    Console.WriteLine(i);
                     break;
                 case Keyboard.Key.Left or Keyboard.Key.A:
                     Console.WriteLine("Left was pressed");
                     gameMap.MovePlayer(GameMap.MovieDirections.Left);
+                    i++;
+                    Console.WriteLine(i);
                     break;
                 case Keyboard.Key.Right or Keyboard.Key.D:
                     gameMap.MovePlayer(GameMap.MovieDirections.Right);
                     Console.WriteLine("Right was pressed");
+                    i++;
+                    Console.WriteLine(i);
                     break;
             }
+
+            // Update the side view text with the new value of 'i'
+            sideView.UpdateTitle(i);
         }
 
         public void Run()
@@ -78,14 +83,14 @@ namespace OOPS_Assessment
 
         private void RenderGame()
         {
-            // Draw game here
             // Clear
-            gameWindow.Clear(new Color(255,0,255));
+            gameWindow.Clear(new Color(255, 0, 255));
 
+            // Draw map and side view
             gameMap.DrawMap(gameWindow);
             sideView.DrawSideView(gameWindow);
 
-            // Display
+            // Display the window
             gameWindow.Display();
         }
     }
