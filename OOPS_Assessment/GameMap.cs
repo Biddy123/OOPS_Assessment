@@ -49,42 +49,40 @@ namespace OOPS_Assessment
 
         public void MovePlayer(MovieDirections direction)
         {
+            // Remove the player from the current tile
             map[player_y, player_x].Texture = new Texture("resources/img_floor.jpg");
 
-            switch(direction)
+            // Calculate the potential new position
+            int newPlayerX = player_x;
+            int newPlayerY = player_y;
+
+            switch (direction)
             {
                 case MovieDirections.Up:
-                    player_y--;
+                    newPlayerY--;
                     break;
                 case MovieDirections.Down:
-                    player_y++;
+                    newPlayerY++;
                     break;
                 case MovieDirections.Left:
-                    player_x--;
+                    newPlayerX--;
                     break;
                 case MovieDirections.Right:
-                    player_x++;
+                    newPlayerX++;
                     break;
             }
-            
+
+            // Check if the new position is within bounds
+            if (newPlayerX >= 0 && newPlayerX < 10 && newPlayerY >= 0 && newPlayerY < 10)
+            {
+                // Update the player's position if it's within bounds
+                player_x = newPlayerX;
+                player_y = newPlayerY;
+            }
+
+            // Place the player on the new tile
             map[player_y, player_x].Texture = new Texture("resources/img_player.jpg");
         }
+
     }
 }
-
-//if (direction == MovieDirections.Up)
-//{
-//    player_y--;
-//}
-//else if (direction == MovieDirections.Down) 
-//{ 
-//    player_y++; 
-//}
-//else if (direction == MovieDirections.Left)
-//{
-//    player_x--;
-//}
-//else if (direction == MovieDirections.Right)
-//{
-//    player_x++;
-//}
