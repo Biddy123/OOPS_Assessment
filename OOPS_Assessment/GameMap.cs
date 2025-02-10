@@ -15,8 +15,8 @@ namespace OOPS_Assessment
         public enum MovieDirections { Left, Right, Up, Down };
         private int player_x = 3;
         private int player_y = 3;
-
-        
+        private int crate_x = 5;
+        private int crate_y = 5;
 
         public GameMap()
         {
@@ -29,10 +29,14 @@ namespace OOPS_Assessment
                     map[y, x] = new RectangleShape();
                     map[y, x].Size = new Vector2f(60, 60);
                     map[y, x].Position = new Vector2f(x * 60f, y * 60f);
-                    map[y, x].Texture = new Texture("resources/img_floor.jpg");
+                    map[y, x].Texture = new Texture("resources/img_floor.jpg"); // Default texture
                 }
             }
 
+            // Set crate texture
+            map[crate_y, crate_x].Texture = new Texture("resources/img_crate.jpg");
+
+            // Set player texture
             map[player_y, player_x].Texture = new Texture("resources/img_player.jpg");
         }
 
@@ -51,33 +55,61 @@ namespace OOPS_Assessment
         {
             // Remove the player from the current tile
             map[player_y, player_x].Texture = new Texture("resources/img_floor.jpg");
+            map[crate_y, crate_x].Texture = new Texture("resources/img_crate.jpg");
+
 
             // Calculate the potential new position
             int newPlayerX = player_x;
             int newPlayerY = player_y;
+            int newCrateX = crate_x;
+            int newCrateY = crate_y;
 
             switch (direction)
             {
                 case MovieDirections.Up:
                     newPlayerY--;
+                    newCrateY = crate_y - 1;
                     break;
                 case MovieDirections.Down:
                     newPlayerY++;
+                    newCrateY = crate_y + 1;
                     break;
                 case MovieDirections.Left:
                     newPlayerX--;
+                    newCrateX = crate_x - 1;
                     break;
                 case MovieDirections.Right:
                     newPlayerX++;
+                    newCrateX = crate_x + 1;
                     break;
             }
 
-            // Check if the new position is within bounds
+            // Check if the new player position is within bounds
             if (newPlayerX >= 0 && newPlayerX < 10 && newPlayerY >= 0 && newPlayerY < 10)
             {
-                // Update the player's position if it's within bounds
-                player_x = newPlayerX;
-                player_y = newPlayerY;
+                // Check if player is trying to move into the crate
+                if (newPlayerX == crate_x && newPlayerY == crate_y)
+                {
+                    // Check if the crate's new position is within bounds and not occupied
+                    if (newCrateX >= 0 && newCrateX < 10 && newCrateY >= 0 && newCrateY < 10)
+                    {
+                        // Move crate
+                        map[crate_y, crate_x].Texture = new Texture("resources/img_floor.jpg");
+                        crate_x = newCrateX;
+                        crate_y = newCrateY;
+                        map[crate_y, crate_x].Texture = new Texture("resources/img_crate.jpg");
+
+                        // Move player
+                        player_x = newPlayerX;
+                        player_y = newPlayerY;
+                    }
+                }
+                else
+                {
+                    // Move player if not blocked by crate
+                    player_x = newPlayerX;
+                    player_y = newPlayerY;
+                }
             }
 
             // Place the player on the new tile
