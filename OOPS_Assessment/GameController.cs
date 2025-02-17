@@ -1,5 +1,6 @@
 ﻿using SFML.Graphics;
 using SFML.Window;
+using System;
 
 namespace OOPS_Assessment
 {
@@ -9,6 +10,11 @@ namespace OOPS_Assessment
         private GameMap gameMap;
         private SideView sideView;
         private int i = 0;
+        private bool isGameOver = false; // Game over flag
+        private Text gameOverText;       // Text for "Game Over"
+        private Font basicFont;
+        private LevelManager levelManager;
+        private int currentLevel;
 
         public GameController()
         {
@@ -16,8 +22,21 @@ namespace OOPS_Assessment
             gameWindow.Closed += OnClosed;
             gameWindow.KeyReleased += OnKeyReleased;
 
-            gameMap = new GameMap();
             sideView = new SideView();
+
+            // Load the font for "Game Over" text
+            basicFont = new Font("resources/basic_font.ttf");
+            gameOverText = new Text("GAME OVER", basicFont, 50)
+            {
+                Position = new SFML.System.Vector2f(200, 250),
+                FillColor = Color.Red
+            };
+
+            levelManager = new LevelManager();
+            currentLevel = 0;
+
+            // Load the first level from LevelManager
+            gameMap = new GameMap(levelManager.GetLevel(currentLevel));
         }
 
         private void OnClosed(object? sender, EventArgs e)
@@ -25,51 +44,59 @@ namespace OOPS_Assessment
             gameWindow.Close();
         }
 
+        private void LoadNextLevel()
+        {
+            currentLevel++;
+            if (currentLevel < levelManager.LevelCount)
+            {
+                gameMap = new GameMap(levelManager.GetLevel(currentLevel));
+            }
+            else
+            {
+                Console.WriteLine("No more levels!");
+            }
+        }
+
         private void OnKeyReleased(object? sender, KeyEventArgs e)
         {
+            if (isGameOver) return; // Do nothing if the game is over
+
             switch (e.Code)
             {
                 case Keyboard.Key.Up or Keyboard.Key.W:
-                    Console.WriteLine("Up was pressed");
                     gameMap.MovePlayer(GameMap.MovieDirections.Up);
-                    i++;
-                    Console.WriteLine(i);
                     break;
                 case Keyboard.Key.Down or Keyboard.Key.S:
-                    Console.WriteLine("Down was pressed");
                     gameMap.MovePlayer(GameMap.MovieDirections.Down);
-                    i++;
-                    Console.WriteLine(i);
                     break;
                 case Keyboard.Key.Left or Keyboard.Key.A:
-                    Console.WriteLine("Left was pressed");
                     gameMap.MovePlayer(GameMap.MovieDirections.Left);
-                    i++;
-                    Console.WriteLine(i);
                     break;
                 case Keyboard.Key.Right or Keyboard.Key.D:
                     gameMap.MovePlayer(GameMap.MovieDirections.Right);
-                    Console.WriteLine("Right was pressed");
-                    i++;
-                    Console.WriteLine(i);
                     break;
             }
 
-            // Update the side view text with the new value of 'i'
-            sideView.UpdateTitle(i);
+            // Check if the game is over
+            if (gameMap.IsCrateOnDiamond())
+            {
+                isGameOver = true; // Set game over state
+                LoadNextLevel(1); // Move to the next level once the current level is complete
+            }
         }
+
 
         public void Run()
         {
             while (gameWindow.IsOpen)
             {
-                // Gather User input
+                // Process events
                 gameWindow.DispatchEvents();
 
-                // Update game
+                // Update game (if needed)
                 UpdateGame();
 
-                // render game
+                // Render game
                 RenderGame();
             }
 
@@ -78,20 +105,47 @@ namespace OOPS_Assessment
 
         private void UpdateGame()
         {
-            // Update game here
+            // Add any game update logic here if needed
         }
 
         private void RenderGame()
         {
-            // Clear
+            // Clear the window with a background color
             gameWindow.Clear(new Color(255, 0, 255));
 
-            // Draw map and side view
+            // Draw the game map and side view
             gameMap.DrawMap(gameWindow);
             sideView.DrawSideView(gameWindow);
 
-            // Display the window
+            // If the game is over, display "GAME OVER" text
+            if (isGameOver)
+            {
+                gameWindow.Draw(gameOverText);
+            }
+
+            // Display the rendered frame
             gameWindow.Display();
         }
+
+        // Existing LoadNextLevel method without parameters
+        // Load next level without parameters
+
+        // Load next level with a specific level index (for example)
+        private void LoadNextLevel(int levelIndex)
+        {
+            currentLevel = levelIndex;
+            if (currentLevel < levelManager.LevelCount)
+            {
+                gameMap = new GameMap(levelManager.GetLevel(currentLevel));
+                isGameOver = false;
+            }
+            else
+            {
+                Console.WriteLine("No more levels!");
+            }
+        }
+
+
+
     }
 }
