@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using SFML.System;
 using System.Resources;
+using SFML.Audio;
 
 namespace OOPS_Assessment
 {
@@ -18,8 +19,19 @@ namespace OOPS_Assessment
         private int crate_x = 5;
         private int crate_y = 5;
 
+        SoundBuffer a;
+        Sound jump;
+        SoundBuffer b;
+        Sound create_move;
+
+
         public GameMap()
         {
+            a = new SoundBuffer("resources/jump.ogg");
+            jump = new Sound(a);
+            b = new SoundBuffer("resources/moving_create.ogg");
+            create_move = new Sound(b);
+
             map = new RectangleShape[10, 10];
 
             for (int y = 0; y < 10; y++)
@@ -56,6 +68,8 @@ namespace OOPS_Assessment
             // Remove the player from the current tile
             map[player_y, player_x].Texture = new Texture("resources/img_floor.jpg");
             map[crate_y, crate_x].Texture = new Texture("resources/img_crate.jpg");
+            
+
 
 
             // Calculate the potential new position
@@ -68,7 +82,7 @@ namespace OOPS_Assessment
             {
                 case MovieDirections.Up:
                     newPlayerY--;
-                    newCrateY = crate_y - 1;
+                    newCrateY = crate_y - 1;       
                     break;
                 case MovieDirections.Down:
                     newPlayerY++;
@@ -98,10 +112,12 @@ namespace OOPS_Assessment
                         crate_x = newCrateX;
                         crate_y = newCrateY;
                         map[crate_y, crate_x].Texture = new Texture("resources/img_crate.jpg");
+                        create_move.Play();
 
                         // Move player
                         player_x = newPlayerX;
                         player_y = newPlayerY;
+                        
                     }
                 }
                 else
@@ -109,6 +125,7 @@ namespace OOPS_Assessment
                     // Move player if not blocked by crate
                     player_x = newPlayerX;
                     player_y = newPlayerY;
+                    jump.Play();
                 }
             }
 
