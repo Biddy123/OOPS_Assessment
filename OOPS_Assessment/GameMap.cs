@@ -18,6 +18,8 @@ namespace OOPS_Assessment
         private int player_y = 3;
         private int crate_x = 5;
         private int crate_y = 5;
+        private int diamond_x = 8;
+        private int diamond_y = 8;
 
         SoundBuffer a;
         Sound jump;
@@ -50,6 +52,9 @@ namespace OOPS_Assessment
 
             // Set player texture
             map[player_y, player_x].Texture = new Texture("resources/img_player.jpg");
+
+            // Set diamond texture
+            map[diamond_x, diamond_y].Texture = new Texture("resources/img_diamond.jpg");
         }
 
         public void DrawMap(RenderWindow window)
@@ -65,12 +70,17 @@ namespace OOPS_Assessment
 
         public void MovePlayer(MovieDirections direction)
         {
-            // Remove the player from the current tile
-            map[player_y, player_x].Texture = new Texture("resources/img_floor.jpg");
-            map[crate_y, crate_x].Texture = new Texture("resources/img_crate.jpg");
-            
-
-
+            // Restore the floor or diamond texture from the player's previous position
+            if (player_x == diamond_x && player_y == diamond_y)
+            {
+                // If the player was standing on the diamond, restore the diamond texture
+                map[player_y, player_x].Texture = new Texture("resources/img_diamond.jpg");
+            }
+            else
+            {
+                // Otherwise, restore the floor texture
+                map[player_y, player_x].Texture = new Texture("resources/img_floor.jpg");
+            }
 
             // Calculate the potential new position
             int newPlayerX = player_x;
@@ -82,7 +92,7 @@ namespace OOPS_Assessment
             {
                 case MovieDirections.Up:
                     newPlayerY--;
-                    newCrateY = crate_y - 1;       
+                    newCrateY = crate_y - 1;
                     break;
                 case MovieDirections.Down:
                     newPlayerY++;
@@ -104,20 +114,34 @@ namespace OOPS_Assessment
                 // Check if player is trying to move into the crate
                 if (newPlayerX == crate_x && newPlayerY == crate_y)
                 {
-                    // Check if the crate's new position is within bounds and not occupied
+                    // Check if the crate's new position is within bounds
                     if (newCrateX >= 0 && newCrateX < 10 && newCrateY >= 0 && newCrateY < 10)
                     {
-                        // Move crate
-                        map[crate_y, crate_x].Texture = new Texture("resources/img_floor.jpg");
+                        // Restore diamond texture if crate moves off the diamond
+                        if (crate_x == diamond_x && crate_y == diamond_y)
+                        {
+                            map[diamond_y, diamond_x].Texture = new Texture("resources/img_diamond.jpg");
+                        }
+
+                        // Move the crate to the new position
                         crate_x = newCrateX;
                         crate_y = newCrateY;
-                        map[crate_y, crate_x].Texture = new Texture("resources/img_crate.jpg");
-                        create_move.Play();
+
+                        // Check if the new crate position is over the diamond
+                        if (crate_x == diamond_x && crate_y == diamond_y)
+                        {
+                            // Leave the diamond visible underneath the crate
+                            map[crate_y, crate_x].Texture = new Texture("resources/img_crate.jpg");
+                        }
+                        else
+                        {
+                            // Normal crate texture
+                            map[crate_y, crate_x].Texture = new Texture("resources/img_crate.jpg");
+                        }
 
                         // Move player
                         player_x = newPlayerX;
                         player_y = newPlayerY;
-                        
                     }
                 }
                 else
@@ -125,7 +149,6 @@ namespace OOPS_Assessment
                     // Move player if not blocked by crate
                     player_x = newPlayerX;
                     player_y = newPlayerY;
-                    jump.Play();
                 }
             }
 
