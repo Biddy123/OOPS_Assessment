@@ -191,6 +191,8 @@ namespace OOPS_Assessment
                         // Move player
                         player_x = newPlayerX;
                         player_y = newPlayerY;
+                        //create_move.Play();
+                        
                     }
                 }
                 else
@@ -198,6 +200,7 @@ namespace OOPS_Assessment
                     // Move player if not blocked by crate
                     player_x = newPlayerX;
                     player_y = newPlayerY;
+                    //jump.Play();
                 }
             }
 
