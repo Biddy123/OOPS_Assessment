@@ -19,9 +19,10 @@ namespace OOPS_Assessment
         private int diamond_x, diamond_y;
         private List<(int x, int y)> crates = new List<(int x, int y)>();
         private List<(int x, int y)> diamonds = new List<(int x, int y)>();
+        private List<(int x, int y)> walls = new List<(int x, int y)>(); // New list to track wall positions
         private int currentLevel = 0;
 
-        
+
         SoundBuffer a;
         Sound jump;
         SoundBuffer b;
@@ -63,6 +64,7 @@ namespace OOPS_Assessment
             // Reset lists and single-point variables
             crates.Clear();
             diamonds.Clear();
+            walls.Clear(); // Clear walls list
             crate_x = -1;
             crate_y = -1;
             diamond_x = -1;
@@ -83,6 +85,7 @@ namespace OOPS_Assessment
                     switch (levelData[y, x])
                     {
                         case 1: // Wall
+                            walls.Add((x, y)); // Add wall position to the list
                             map[y, x].Texture = new Texture("resources/img_wall.jpg");
                             break;
                         case 2: // Player
@@ -123,6 +126,7 @@ namespace OOPS_Assessment
             Console.WriteLine($"Player: ({player_x}, {player_y})");
             Console.WriteLine($"Primary Crate: ({crate_x}, {crate_y})");
             Console.WriteLine($"Primary Diamond: ({diamond_x}, {diamond_y})");
+            Console.WriteLine($"Walls count: {walls.Count}");
         }
 
         public bool IsCrateOnDiamond()
@@ -154,7 +158,7 @@ namespace OOPS_Assessment
             }
         }
 
-        public void MovePlayer(MovieDirections direction)
+        public bool MovePlayer(MovieDirections direction)
         {
             // Restore the floor or diamond texture from the player's previous position
             RestorePlayerPreviousPosition();
@@ -180,33 +184,51 @@ namespace OOPS_Assessment
             }
 
             // Check if the new player position is within bounds
-            if (newPlayerX >= 0 && newPlayerX < 10 && newPlayerY >= 0 && newPlayerY < 10)
+            if (newPlayerX < 0 || newPlayerX >= 10 || newPlayerY < 0 || newPlayerY >= 10)
             {
-                // Check if player is trying to move into a crate
-                var crateIndex = crates.FindIndex(c => c.x == newPlayerX && c.y == newPlayerY);
-                if (crateIndex != -1)
-                {
-                    // Try to move the crate
-                    if (TryMoveCrate(crateIndex, direction))
-                    {
-                        // Move player
-                        player_x = newPlayerX;
-                        player_y = newPlayerY;
-                        //create_move.Play();
-                        
-                    }
-                }    
-                else
-                {
-                    // Move player if not blocked by crate
-                    player_x = newPlayerX;
-                    player_y = newPlayerY;
-                    //jump.Play();
-                }
+                // Out of bounds, can't move
+                map[player_y, player_x].Texture = new Texture("resources/img_player.jpg");
+                return false;
             }
 
-            // Place the player on the new tile
-            map[player_y, player_x].Texture = new Texture("resources/img_player.jpg");
+            // Check if player is trying to move into a wall
+            if (walls.Contains((newPlayerX, newPlayerY)))
+            {
+                // Cannot move into walls, so return without changing player position
+                map[player_y, player_x].Texture = new Texture("resources/img_player.jpg");
+                return false;
+            }
+
+            // Check if player is trying to move into a crate
+            var crateIndex = crates.FindIndex(c => c.x == newPlayerX && c.y == newPlayerY);
+            if (crateIndex != -1)
+            {
+                // Try to move the crate
+                if (TryMoveCrate(crateIndex, direction))
+                {
+                    // Move player
+                    player_x = newPlayerX;
+                    player_y = newPlayerY;
+                    //create_move.Play();
+                    map[player_y, player_x].Texture = new Texture("resources/img_player.jpg");
+                    return true;
+                }
+                else
+                {
+                    // Couldn't move crate, so can't move player
+                    map[player_y, player_x].Texture = new Texture("resources/img_player.jpg");
+                    return false;
+                }
+            }
+            else
+            {
+                // Move player if not blocked by crate or wall
+                player_x = newPlayerX;
+                player_y = newPlayerY;
+                //jump.Play();
+                map[player_y, player_x].Texture = new Texture("resources/img_player.jpg");
+                return true;
+            }
         }
 
         private bool TryMoveCrate(int crateIndex, MovieDirections direction)
@@ -232,36 +254,44 @@ namespace OOPS_Assessment
             }
 
             // Check if new crate position is valid
-            if (newCrateX >= 0 && newCrateX < 10 && newCrateY >= 0 && newCrateY < 10)
+            if (newCrateX < 0 || newCrateX >= 10 || newCrateY < 0 || newCrateY >= 10)
             {
-                // Check if the new position is not occupied by another crate
-                if (crates.All(c => c.x != newCrateX || c.y != newCrateY))
-                {
-                    // Update crate position
-                    var oldCrate = crates[crateIndex];
-                    crates[crateIndex] = (newCrateX, newCrateY);
-
-                    // Restore previous tile texture
-                    map[oldCrate.y, oldCrate.x].Texture =
-                        diamonds.Contains((oldCrate.x, oldCrate.y))
-                            ? new Texture("resources/img_diamond.jpg")
-                            : new Texture("resources/img_floor.jpg");
-
-                    // Update new crate position texture
-                    if (diamonds.Contains((newCrateX, newCrateY)))
-                    {
-                        map[newCrateY, newCrateX].Texture = new Texture("resources/img_filled_crate.jpg");
-                    }
-                    else
-                    {
-                        map[newCrateY, newCrateX].Texture = new Texture("resources/img_crate.jpg");
-                    }
-
-                    return true;
-                }
+                return false; // Out of bounds
             }
 
-            return false;
+            // Check if the new position is not occupied by a wall
+            if (walls.Contains((newCrateX, newCrateY)))
+            {
+                return false; // Cannot push crate into walls
+            }
+
+            // Check if the new position is not occupied by another crate
+            if (crates.Any(c => c.x == newCrateX && c.y == newCrateY))
+            {
+                return false; // Cannot push crate into another crate
+            }
+
+            // Update crate position
+            var oldCrate = crates[crateIndex];
+            crates[crateIndex] = (newCrateX, newCrateY);
+
+            // Restore previous tile texture
+            map[oldCrate.y, oldCrate.x].Texture =
+                diamonds.Contains((oldCrate.x, oldCrate.y))
+                    ? new Texture("resources/img_diamond.jpg")
+                    : new Texture("resources/img_floor.jpg");
+
+            // Update new crate position texture
+            if (diamonds.Contains((newCrateX, newCrateY)))
+            {
+                map[newCrateY, newCrateX].Texture = new Texture("resources/img_filled_crate.jpg");
+            }
+            else
+            {
+                map[newCrateY, newCrateX].Texture = new Texture("resources/img_crate.jpg");
+            }
+
+            return true;
         }
 
         private void RestorePlayerPreviousPosition()

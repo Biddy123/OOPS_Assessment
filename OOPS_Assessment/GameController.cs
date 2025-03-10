@@ -23,7 +23,7 @@ public class GameController
         background_music = new Sound(d);
         gameWindow = new RenderWindow(new VideoMode(800, 600), "Assessment Project", Styles.Close);
         gameWindow.Closed += OnClosed;
-        gameWindow.KeyReleased += OnKeyReleased;
+        gameWindow.KeyPressed += OnKeyPressed;
 
         gameMap = new GameMap();
         sideView = new SideView();
@@ -42,36 +42,37 @@ public class GameController
         gameWindow.Close();
     }
 
-    private void OnKeyReleased(object? sender, KeyEventArgs e)
+    private void OnKeyPressed(object? sender, KeyEventArgs e)
     {
+        bool moveSuccessful = false; // Flag to track if a move was successful
+
         switch (e.Code)
         {
             case Keyboard.Key.Up or Keyboard.Key.W:
                 Console.WriteLine("Up was pressed");
-                gameMap.MovePlayer(GameMap.MovieDirections.Up);
-                i++;
-                Console.WriteLine(i);
+                moveSuccessful = gameMap.MovePlayer(GameMap.MovieDirections.Up);
                 break;
             case Keyboard.Key.Down or Keyboard.Key.S:
                 Console.WriteLine("Down was pressed");
-                gameMap.MovePlayer(GameMap.MovieDirections.Down);
-                i++;
-                Console.WriteLine(i);
+                moveSuccessful = gameMap.MovePlayer(GameMap.MovieDirections.Down);
                 break;
             case Keyboard.Key.Left or Keyboard.Key.A:
                 Console.WriteLine("Left was pressed");
-                gameMap.MovePlayer(GameMap.MovieDirections.Left);
-                i++;
-                Console.WriteLine(i);
+                moveSuccessful = gameMap.MovePlayer(GameMap.MovieDirections.Left);
                 break;
             case Keyboard.Key.Right or Keyboard.Key.D:
-                gameMap.MovePlayer(GameMap.MovieDirections.Right);
                 Console.WriteLine("Right was pressed");
-                i++;
-                Console.WriteLine(i);
+                moveSuccessful = gameMap.MovePlayer(GameMap.MovieDirections.Right);
                 break;
         }
-        sideView.UpdateTitle(i);
+
+        // Only increment the step counter if the move was successful
+        if (moveSuccessful)
+        {
+            i++;
+            Console.WriteLine(i);
+            sideView.UpdateTitle(i);
+        }
 
         if (gameMap.AreAllCratesOnDiamonds())
         {
@@ -154,7 +155,7 @@ public class GameController
             gameWindow.Clear(Color.Black);
             gameWindow.Draw(welcomeText);
             gameWindow.Display();
-            
+
 
             gameWindow.DispatchEvents(); // Process window events
 
