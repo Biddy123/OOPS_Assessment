@@ -21,6 +21,7 @@ namespace OOPS_Assessment
         private List<(int x, int y)> diamonds = new List<(int x, int y)>();
         private int currentLevel = 0;
 
+        
         SoundBuffer a;
         Sound jump;
         SoundBuffer b;
@@ -194,7 +195,7 @@ namespace OOPS_Assessment
                         //create_move.Play();
                         
                     }
-                }
+                }    
                 else
                 {
                     // Move player if not blocked by crate

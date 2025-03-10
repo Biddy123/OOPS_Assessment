@@ -1,4 +1,5 @@
 ﻿using OOPS_Assessment;
+using SFML.Audio;
 using SFML.Graphics;
 using SFML.System;
 using SFML.Window;
@@ -13,14 +14,20 @@ public class GameController
     private Text gameOverText;
     private int i = 0;
 
+    SoundBuffer d;
+    Sound background_music;
+
     public GameController()
     {
+        d = new SoundBuffer("resources/Game_music_2.ogg");
+        background_music = new Sound(d);
         gameWindow = new RenderWindow(new VideoMode(800, 600), "Assessment Project", Styles.Close);
         gameWindow.Closed += OnClosed;
         gameWindow.KeyReleased += OnKeyReleased;
 
         gameMap = new GameMap();
         sideView = new SideView();
+        background_music.Play();
 
         font = new Font("resources/basic_font.ttf");
         gameOverText = new Text("Game Over!\n\nPress ENTER to Restart\nPress ESC to Quit", font, 30);
@@ -71,6 +78,8 @@ public class GameController
             currentLevel++;
             if (currentLevel < Levels.LevelMaps.Length)
             {
+                sideView.UpdateTitle(0);
+                i = 0;
                 gameMap.LoadLevel(currentLevel);
                 Console.WriteLine($"Loading level {currentLevel + 1}"); // Debug log
             }
@@ -114,6 +123,7 @@ public class GameController
         gameWindow.Clear(Color.Black);
         gameWindow.Draw(gameOverText);
         gameWindow.Display();
+        background_music.Stop();
 
         while (gameWindow.IsOpen)
         {
@@ -127,6 +137,7 @@ public class GameController
             {
                 currentLevel = 0; // Reset to level 1
                 gameMap.LoadLevel(currentLevel);
+                background_music.Play();
                 return; // Exit the loop and restart the game
             }
         }
@@ -143,6 +154,7 @@ public class GameController
             gameWindow.Clear(Color.Black);
             gameWindow.Draw(welcomeText);
             gameWindow.Display();
+            
 
             gameWindow.DispatchEvents(); // Process window events
 
