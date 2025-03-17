@@ -87,6 +87,8 @@ public class GameController
             else
             {
                 // Show game over screen
+                sideView.UpdateTitle(0);
+                i = 0;
                 RenderGameOver();
                 Console.WriteLine("All levels completed!"); // Debug log
             }
