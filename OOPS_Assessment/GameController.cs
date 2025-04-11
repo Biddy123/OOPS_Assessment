@@ -102,7 +102,6 @@ public class GameController
             gameWindow.DispatchEvents();
             UpdateGame();
             RenderGame();
-            //RenderWelcomeText();
         }
 
         gameWindow.Close();

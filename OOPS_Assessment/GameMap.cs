@@ -20,6 +20,7 @@ namespace OOPS_Assessment
         private List<(int x, int y)> crates = new List<(int x, int y)>();
         private List<(int x, int y)> diamonds = new List<(int x, int y)>();
         private List<(int x, int y)> walls = new List<(int x, int y)>(); // New list to track wall positions
+        private List<(int x, int y)> filledCrates = new List<(int x, int y)>(); // New list to track filled crates
         private int currentLevel = 0;
 
 
@@ -65,6 +66,7 @@ namespace OOPS_Assessment
             crates.Clear();
             diamonds.Clear();
             walls.Clear(); // Clear walls list
+            filledCrates.Clear(); // Clear filled crates list
             crate_x = -1;
             crate_y = -1;
             diamond_x = -1;
@@ -203,6 +205,14 @@ namespace OOPS_Assessment
             var crateIndex = crates.FindIndex(c => c.x == newPlayerX && c.y == newPlayerY);
             if (crateIndex != -1)
             {
+                // Check if this crate is a filled crate (already on a diamond)
+                if (filledCrates.Contains((newPlayerX, newPlayerY)))
+                {
+                    // Cannot move filled crates
+                    map[player_y, player_x].Texture = new Texture("resources/img_player.jpg");
+                    return false;
+                }
+
                 // Try to move the crate
                 if (TryMoveCrate(crateIndex, direction))
                 {
@@ -285,6 +295,8 @@ namespace OOPS_Assessment
             if (diamonds.Contains((newCrateX, newCrateY)))
             {
                 map[newCrateY, newCrateX].Texture = new Texture("resources/img_filled_crate.jpg");
+                // Add to filled crates list
+                filledCrates.Add((newCrateX, newCrateY));
             }
             else
             {
