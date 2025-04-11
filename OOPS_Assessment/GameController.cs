@@ -14,20 +14,17 @@ public class GameController
     private Text gameOverText;
     private int i = 0;
 
-    SoundBuffer d;
-    Sound background_music;
-
     public GameController()
     {
-        d = new SoundBuffer("resources/Game_music_2.ogg");
-        background_music = new Sound(d);
         gameWindow = new RenderWindow(new VideoMode(800, 600), "Assessment Project", Styles.Close);
         gameWindow.Closed += OnClosed;
         gameWindow.KeyPressed += OnKeyPressed;
 
         gameMap = new GameMap();
         sideView = new SideView();
-        background_music.Play();
+
+        // Start background music with the audio manager
+        AudioManager.Instance.PlayBackgroundMusic();
 
         font = new Font("resources/basic_font.ttf");
         gameOverText = new Text("Game Over!\n\nPress ENTER to Restart\nPress ESC to Quit", font, 30);
@@ -45,33 +42,45 @@ public class GameController
     private void OnKeyPressed(object? sender, KeyEventArgs e)
     {
         bool moveSuccessful = false; // Flag to track if a move was successful
+        GameMap.MovieDirections? direction = null;
 
         switch (e.Code)
         {
             case Keyboard.Key.Up or Keyboard.Key.W:
                 Console.WriteLine("Up was pressed");
-                moveSuccessful = gameMap.MovePlayer(GameMap.MovieDirections.Up);
+                direction = GameMap.MovieDirections.Up;
                 break;
             case Keyboard.Key.Down or Keyboard.Key.S:
                 Console.WriteLine("Down was pressed");
-                moveSuccessful = gameMap.MovePlayer(GameMap.MovieDirections.Down);
+                direction = GameMap.MovieDirections.Down;
                 break;
             case Keyboard.Key.Left or Keyboard.Key.A:
                 Console.WriteLine("Left was pressed");
-                moveSuccessful = gameMap.MovePlayer(GameMap.MovieDirections.Left);
+                direction = GameMap.MovieDirections.Left;
                 break;
             case Keyboard.Key.Right or Keyboard.Key.D:
                 Console.WriteLine("Right was pressed");
-                moveSuccessful = gameMap.MovePlayer(GameMap.MovieDirections.Right);
+                direction = GameMap.MovieDirections.Right;
                 break;
         }
 
-        // Only increment the step counter if the move was successful
-        if (moveSuccessful)
+        if (direction.HasValue)
         {
-            i++;
-            Console.WriteLine(i);
-            sideView.UpdateTitle(i);
+            // We pass the direction and get back both success status and whether a crate was moved
+            (moveSuccessful, bool crateMoved) = gameMap.MovePlayer(direction.Value);
+
+            // Play appropriate sound
+            if (moveSuccessful)
+            {
+                if (crateMoved)
+                    AudioManager.Instance.PlayCrateMoveSound();
+                else
+                    AudioManager.Instance.PlayJumpSound();
+
+                i++;
+                Console.WriteLine(i);
+                sideView.UpdateTitle(i);
+            }
         }
 
         if (gameMap.AreAllCratesOnDiamonds())
@@ -125,7 +134,7 @@ public class GameController
         gameWindow.Clear(Color.Black);
         gameWindow.Draw(gameOverText);
         gameWindow.Display();
-        background_music.Stop();
+        AudioManager.Instance.StopBackgroundMusic();
 
         while (gameWindow.IsOpen)
         {
@@ -139,7 +148,7 @@ public class GameController
             {
                 currentLevel = 0; // Reset to level 1
                 gameMap.LoadLevel(currentLevel);
-                background_music.Play();
+                AudioManager.Instance.PlayBackgroundMusic();
                 return; // Exit the loop and restart the game
             }
         }
@@ -156,7 +165,6 @@ public class GameController
             gameWindow.Clear(Color.Black);
             gameWindow.Draw(welcomeText);
             gameWindow.Display();
-
 
             gameWindow.DispatchEvents(); // Process window events
 

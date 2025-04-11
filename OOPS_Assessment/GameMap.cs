@@ -23,19 +23,8 @@ namespace OOPS_Assessment
         private List<(int x, int y)> filledCrates = new List<(int x, int y)>(); // New list to track filled crates
         private int currentLevel = 0;
 
-
-        SoundBuffer a;
-        Sound jump;
-        SoundBuffer b;
-        Sound create_move;
-
         public GameMap()
         {
-            a = new SoundBuffer("resources/jump.ogg");
-            jump = new Sound(a);
-            b = new SoundBuffer("resources/moving_create.ogg");
-            create_move = new Sound(b);
-
             map = new RectangleShape[10, 10];
             LoadLevel(currentLevel);
 
@@ -160,8 +149,10 @@ namespace OOPS_Assessment
             }
         }
 
-        public bool MovePlayer(MovieDirections direction)
+        public (bool success, bool crateMoved) MovePlayer(MovieDirections direction)
         {
+            bool crateMoved = false;
+
             // Restore the floor or diamond texture from the player's previous position
             RestorePlayerPreviousPosition();
 
@@ -190,7 +181,7 @@ namespace OOPS_Assessment
             {
                 // Out of bounds, can't move
                 map[player_y, player_x].Texture = new Texture("resources/img_player.jpg");
-                return false;
+                return (false, crateMoved);
             }
 
             // Check if player is trying to move into a wall
@@ -198,7 +189,7 @@ namespace OOPS_Assessment
             {
                 // Cannot move into walls, so return without changing player position
                 map[player_y, player_x].Texture = new Texture("resources/img_player.jpg");
-                return false;
+                return (false, crateMoved);
             }
 
             // Check if player is trying to move into a crate
@@ -210,7 +201,7 @@ namespace OOPS_Assessment
                 {
                     // Cannot move filled crates
                     map[player_y, player_x].Texture = new Texture("resources/img_player.jpg");
-                    return false;
+                    return (false, crateMoved);
                 }
 
                 // Try to move the crate
@@ -219,15 +210,15 @@ namespace OOPS_Assessment
                     // Move player
                     player_x = newPlayerX;
                     player_y = newPlayerY;
-                    //create_move.Play();
+                    crateMoved = true;
                     map[player_y, player_x].Texture = new Texture("resources/img_player.jpg");
-                    return true;
+                    return (true, crateMoved);
                 }
                 else
                 {
                     // Couldn't move crate, so can't move player
                     map[player_y, player_x].Texture = new Texture("resources/img_player.jpg");
-                    return false;
+                    return (false, crateMoved);
                 }
             }
             else
@@ -235,9 +226,8 @@ namespace OOPS_Assessment
                 // Move player if not blocked by crate or wall
                 player_x = newPlayerX;
                 player_y = newPlayerY;
-                //jump.Play();
                 map[player_y, player_x].Texture = new Texture("resources/img_player.jpg");
-                return true;
+                return (true, crateMoved);
             }
         }
 
