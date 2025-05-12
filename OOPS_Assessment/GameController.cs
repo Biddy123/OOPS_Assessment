@@ -73,8 +73,6 @@ public class GameController
             if (moveSuccessful)
             {
                 if (crateMoved)
-                    AudioManager.Instance.PlayCrateMoveSound();
-                else
                     AudioManager.Instance.PlayJumpSound();
 
                 i++;
